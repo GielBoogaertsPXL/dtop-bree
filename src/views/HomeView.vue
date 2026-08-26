@@ -1,8 +1,54 @@
-<script setup></script>
+<script setup>
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+
+const sectionRefs = ref([])
+const itemRefs = ref([])
+let observer = null
+
+function setSectionRef(el, index) {
+  if (el) sectionRefs.value[index] = el
+}
+
+function setItemRef(el, index) {
+  if (el) itemRefs.value[index] = el
+}
+
+onMounted(async () => {
+  await nextTick()
+
+  observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      {
+        // Trigger as soon as an element enters the top 80% of the screen
+        rootMargin: '0px 0px -20% 0px',
+        threshold: 0
+      }
+  )
+
+  sectionRefs.value.forEach((el) => {
+    if (el) observer.observe(el)
+  })
+
+  itemRefs.value.forEach((el) => {
+    if (el) observer.observe(el)
+  })
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
+</script>
 
 <template>
   <main>
-    <section class="hero">
+    <section class="hero" :ref="(el) => setSectionRef(el, 0)">
       <div class="container">
         <img src="/DTOP_logo.png" alt="DTOP Logo" />
         <h1>
@@ -12,14 +58,14 @@
         </h1>
       </div>
     </section>
-    <section class="paragraph">
+    <section class="paragraph" :ref="(el) => setSectionRef(el, 1)">
       <p>
         Al meer dan 20 jaar staat <span class="bold">D</span>(esk)<span class="bold">TOP</span>
         (Publishing) in Bree grafisch tot uw dienst, met degelijke begeleiding en deskundig advies.
       </p>
     </section>
-    <section class="service">
-      <div class="item">
+    <section class="service" :ref="(el) => setSectionRef(el, 2)">
+      <div class="item" :ref="(el) => setItemRef(el, 0)">
         <p>Onze diensten</p>
         <div class="text">
           <h2>
@@ -33,7 +79,7 @@
           </p>
         </div>
       </div>
-      <div class="item">
+      <div class="item" :ref="(el) => setItemRef(el, 1)">
         <p>Ervaring</p>
         <div class="text">
           <h2>
@@ -47,7 +93,7 @@
           </p>
         </div>
       </div>
-      <div class="item">
+      <div class="item" :ref="(el) => setItemRef(el, 2)">
         <p>Persoonlijke aanpak</p>
         <div class="text">
           <h2>
@@ -61,11 +107,10 @@
         </div>
       </div>
     </section>
-    <section class="curious">
+    <section class="curious" :ref="(el) => setSectionRef(el, 3)">
       <h2>Interesse?</h2>
       <p>
-        Neem zeker vrijblijvend contact met ons op en wie weet gaan we een jarenlange samenwerking
-        tegemoet.
+        Neem zeker vrijblijvend contact met ons op.
       </p>
       <span>
         <a href="mailto:web@dtop.be">web@dtop.be</a> <br />
@@ -81,6 +126,34 @@ main {
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.hero,
+.paragraph,
+.service,
+.curious {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.hero.is-visible,
+.paragraph.is-visible,
+.service.is-visible,
+.curious.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.item {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero {
@@ -136,7 +209,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 10rem;
-  padding: 8rem 4rem 12rem 2rem;
+  padding: 8rem 4rem 12rem;
 }
 
 .item {
