@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'arial nova', sans-serif;
+  color: #454967;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover,
+.router-link-active {
+  font-weight: bold;
+}
