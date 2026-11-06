@@ -9,7 +9,12 @@ const images = ref(
 
 const activeIndex = ref(null)
 const articleRefs = ref([])
+const heroRef = ref(null)
+const textRef = ref(null)
+
 let observer = null
+let resizeObserver = null
+let lastWidth = 0
 
 function setArticleRef(el, index) {
   if (el) articleRefs.value[index] = el
@@ -32,11 +37,55 @@ function prevImage() {
       (activeIndex.value - 1 + images.value.length) % images.value.length
 }
 
+function setScrollLock(locked) {
+  const html = document.documentElement
+  const body = document.body
+
+  if (locked) {
+    // Measure before hiding, so the layout doesn't jump when the scrollbar disappears
+    const scrollbarWidth = window.innerWidth - html.clientWidth
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.paddingRight = `${scrollbarWidth}px`
+  } else {
+    html.style.overflow = ''
+    body.style.overflow = ''
+    body.style.paddingRight = ''
+  }
+}
+
 watch(activeIndex, (newValue) => {
-  document.body.style.overflow = newValue !== null ? 'hidden' : ''
+  setScrollLock(newValue !== null)
 })
 
+const resizeText = async () => {
+  if (!heroRef.value || !textRef.value) return
+
+  const containerWidth = heroRef.value.clientWidth
+  if (containerWidth === lastWidth) return
+  lastWidth = containerWidth
+
+  await document.fonts.ready
+
+  textRef.value.style.fontSize = '100px'
+  const textWidth = textRef.value.scrollWidth
+  if (textWidth === 0) return
+
+  textRef.value.style.fontSize = `${(containerWidth / textWidth) * 100 * 1.015}px`
+}
+
 onMounted(async () => {
+  // Hero text resizer
+  resizeText()
+
+  if (window.ResizeObserver && heroRef.value) {
+    resizeObserver = new ResizeObserver(() => resizeText())
+    resizeObserver.observe(heroRef.value)
+  } else {
+    window.addEventListener('resize', resizeText)
+  }
+
+  // Fade-in for the gallery articles
   await nextTick()
 
   observer = new IntersectionObserver(
@@ -60,14 +109,25 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  document.body.style.overflow = ''
+  setScrollLock(false)
+
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  } else {
+    window.removeEventListener('resize', resizeText)
+  }
+
   if (observer) observer.disconnect()
 })
 </script>
 
 <template>
   <main>
-    <section>
+    <section ref="heroRef" class="hero">
+      <span ref="textRef">PORTFOLIO</span>
+    </section>
+
+    <section class="gallery">
       <article
           v-for="(image, index) in images"
           :key="index"
@@ -96,7 +156,6 @@ onUnmounted(() => {
 
 <style scoped>
 main {
-  padding: 0 2rem;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -104,31 +163,52 @@ main {
   position: relative;
 }
 
-section {
-  padding: 20rem 0 14rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+.hero {
+  position: relative;
+  min-height: 100svh;
+  width: 100%;
+  background: linear-gradient(340deg,rgba(69, 73, 103, 1) 30%, rgba(223, 223, 247, 1) 100%);
+}
+
+.hero span {
+  position: absolute;
+  left: -1.5vw;
+  bottom: 0;
+  color: white;
+  letter-spacing: -5.5%;
+  font-weight: bold;
+  line-height: 0.7;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.gallery {
+  padding: 20rem 2rem 14rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1.5rem;
   width: 100%;
 }
 
 article {
+  background-color: #454967;
   aspect-ratio: 1;
-  width: calc(25% - 3rem / 4);
-  background: #454967;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-
   opacity: 0;
   transform: translateY(1rem);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.3s ease;
 }
 
 article.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+article.is-visible:hover {
+  transform: translateY(0) scale(1.02);
 }
 
 .article-title {
@@ -139,12 +219,15 @@ article.is-visible {
 }
 
 .lightbox {
+  overflow: hidden;
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .lightbox-backdrop {
@@ -206,5 +289,11 @@ article.is-visible {
   font-size: 2.5rem;
   line-height: 1;
   cursor: pointer;
+}
+
+@media screen and (max-width: 500px) {
+  .gallery {
+    padding: 10rem 1rem 14rem;
+  }
 }
 </style>

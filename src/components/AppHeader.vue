@@ -1,44 +1,52 @@
-<script setup></script>
+<script setup>
+</script>
 
 <template>
   <header>
     <div>
-      <img src="/DTOP_logo.png" alt="DTOP logo" />
-      <p>D’TOP – GRAFISCHE VORMGEVING</p>
+      <RouterLink :to="{ name: 'home' }">
+        <img src="/DTOP_logo.png" alt="DTOP logo" class="logo"/>
+      </RouterLink>
     </div>
     <nav>
       <RouterLink :to="{ name: 'home' }">Home</RouterLink>
       <RouterLink :to="{ name: 'portfolio' }">Portfolio</RouterLink>
-      <RouterLink :to="{ name: 'contact' }">Contact</RouterLink>
     </nav>
   </header>
 </template>
 
 <style scoped>
 header {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
-  height: 4rem;
-  padding: 0.5rem 2rem;
+  padding: 1rem 1.5rem 20rem 0.2rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+}
+
+.logo {
+  height: 4rem;
 }
 
 nav {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  font-size: 0.9rem
 }
 
-div {
-  height: 100%;
+nav a {
+  width: fit-content;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: bold;
+  justify-content: center;
+  color: white;
+  background-image: linear-gradient(white, white);
 }
 
-img {
-  height: 1rem;
+nav a:hover {
+  color: #454967;
 }
 </style>
