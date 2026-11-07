@@ -4,7 +4,7 @@
 <template>
   <footer>
     <p>© 2026</p>
-    <p>D’TOP — grafische vormgeving x <a href="https://www.gielboogaerts.com" target="_blank">GIELBOOGAERTSSTUDIO</a></p>
+    <p>D’TOP — grafische vormgeving i.s.m. <a href="https://www.gielboogaerts.com" target="_blank">GIELBOOGAERTSSTUDIO</a></p>
   </footer>
 </template>
 
@@ -26,11 +26,15 @@ a:hover {
   color: white;
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 450px) {
   footer {
     padding: 1rem;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  footer a {
+    margin-left: -0.25rem;
   }
 }
 </style>

@@ -27,9 +27,15 @@ a {
   transition: background-size 0.3s ease, color 0.3s ease;
 }
 
-a:hover {
-  background-size: 100% 100%;
-  color: white;
+@media (hover: hover) {
+  a:hover {
+    background-size: 100% 100%;
+    color: white;
+  }
+}
+
+.router-link-active {
+  font-weight: bold;
 }
 
 .router-link-active {
